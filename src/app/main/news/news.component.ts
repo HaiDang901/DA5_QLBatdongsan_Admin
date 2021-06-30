@@ -1,7 +1,7 @@
-import { Component, Injector, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ConfirmationService, MessageService } from 'primeng/api';
+
 import { first } from 'rxjs/operators';
-import { Router } from '@angular/router';
 import { TinTucService } from '../../lib/tintuc.service';
 
 
@@ -9,57 +9,134 @@ declare let alertify: any;
 @Component({
   selector: 'app-news',
   templateUrl: './news.component.html',
-  styleUrls: ['./news.component.css']
+  styleUrls: ['./news.component.css'],
+  providers: [MessageService, ConfirmationService],
 })
 export class NewsComponent implements OnInit {
 
-  text: any;
-  new: any;
-  selectedTT: any;
-  top: Number[]|any;
+  tieude: any;
+  public text: string | any;
+  list: any;
   page: any;
+  total: any;
+  detail: any;
 
-
-  constructor(private _news: TinTucService ) {
-    this.top=[5,10,20,50]
-  }
+  constructor(private _news: TinTucService,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,) { }
 
   ngOnInit(): void {
-    this.page=1;
-    this.page=1;
-    this.selectedTT = 'TT0001';
-    this._news
-    .NewView(this.selectedTT)
-    .pipe(first())
-    .subscribe((res)=>{
-      this.new = res;
-    })
+    this.page = 1;
+    this._news.postlist('/getNews', { page: this.page })
+      .subscribe(res => {
+        this.list = res.data;
+        this.total = res.totalItems;
+      })
   }
 
-  GET() {
+
+  loadPage(page: any) {
+    this._news.postlist('/getNews', { page: this.page })
+      .subscribe(res => {
+        this.list = res.data;
+        this.total = res.totalItems;
+      })
+  }
+
+  displayAdd: boolean = false;
+  displayView: boolean = false;
+  displayEdit: boolean = false;
+  showAdd() {
+    this.tieude = "";
+    this.text = "";
+    this.displayAdd = true;
+  }
+
+
+  add() {
+    var news = {
+      TieuDe: this.tieude,
+      NoiDung: this.text
+    }
     this._news
-      .NewView(this._news)
+      .addNews(news)
+      .pipe(first())
+      .subscribe({
+        next: (res) => {
+          if (res > 0) {
+            alertify.success("Thêm tin thành công!");
+            this.displayAdd = false;
+            this.tieude = "";
+            this.text = "";
+            this.loadPage(1);
+          }
+        },
+        error: (err) => {
+          console.log(err);
+          alertify.error("Đã có lỗi");
+        },
+      });
+  }
+  View(id: any) {
+    this.displayView = true;
+    this._news
+      .detail(id)
       .pipe(first())
       .subscribe(res => {
-        this.new = res;
+        this.detail = res;
       })
   }
-  display: boolean = false;
-
-  select(){
-    this._news.postlist('/GetNews', { page: this.page, total: this.selectedTT})
+  Edit(id: any) {
+    this.displayEdit = true;
+    this._news
+      .detail(id)
+      .pipe(first())
       .subscribe(res => {
-        this.new = res.data;
+        this.detail = res;
+        this.tieude = res.tieuDe;
+        this.text = res.noiDung;
       })
   }
-  showDialog() {
-    this.display = true;
+  save(id:any){
+    var news = {
+      TieuDe: this.tieude,
+      NoiDung: this.text
+    }
+    this._news
+      .updateNews(id,news)
+      .pipe(first())
+      .subscribe({
+        next: (res) => {
+          if (res > 0) {
+            alertify.success("Cập nhật thành công!");
+            this.displayEdit = false;
+            this.tieude = "";
+            this.text = "";
+            this.loadPage(1);
+          }
+        },
+        error: (err) => {
+          console.log(err);
+          alertify.error("Đã có lỗi");
+        },
+      });
   }
-  loadPage(page:any){
-    this._news.postlist('/GetNews', { page: this.page, total: this.selectedTT})
-      .subscribe(res => {
-        this.new = res.data;
-      })
-
+  delete(id: any) {
+    this.confirmationService.confirm({
+      header: 'Xoá tin tức?',
+      message: 'Bạn có chắc chắn xoá ?',
+      accept: () => {
+        this._news.delete(id).pipe(first())
+          .subscribe((res) => {
+            //console.log(res);
+            if (res > 0) {
+              alertify.success("Xóa thành công");
+              this.loadPage(1);
+            }
+          },
+          );
+      }
+    })
   }
 }
+
