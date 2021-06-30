@@ -1,51 +1,44 @@
-<div class="top">
-    <h2>Danh sách tin tức</h2>
-    <div class="right">
-        <button class="btnX" pButton type="button" (click)="showDialog()" label="Thêm"></button>
-        
-    </div>
-</div>
+
 <div class="bot">
+    <h3>Danh sách Tin Tức</h3>
+    <!-- <p-dropdown  [options]="top" [(ngModel)]="selectedTT"   placeholder="{{selectedTT}}" (onClick)="select()">
+            
+    </p-dropdown> -->
+
+    <div class="top1">
+        <p-dropdown [style]="{'width': '64%'}" [options]="new" [(ngModel)]="selectedTT" optionLabel="maTinTuc" [filter]="true" filterBy="maTinTuc"
+        [showClear]="true" placeholder="Mã Tin Tức" class="p-inputtext-sm1">
+            <ng-template pTemplate="selectedItem">
+                <div class="country-item country-item-value" *ngIf="selectedTT">
+                    <div>{{selectedTT.maTinTuc}}</div>
+                </div>
+            </ng-template>
+        </p-dropdown>
+    </div>
+
     <table class="table table-hover">
         <thead>
             <th>STT</th>
-            <th>Mã tin tức</th>
-            <th>Nội dung</th>
+            <th>Mã Tin Tức</th>
+            <th style="width: 370px">Tiêu Đề</th>
+            <th style="width: 400px">Nội Dung</th>
+            <th>Trạng Thái</th>
         </thead>
         <tbody>
-            <!-- <tr *ngFor="let item of user, index as i">
-                <td style="text-align: center;">{{i+1}}</td>
-                <td style="text-align: center;">{{item.maTk}}</td>
-                <td>{{item.hoTen}}</td>
-                <td>{{item.diaChi}}</td>
-                <td style="text-align: center;">{{item.sdt}}</td>
-                <td>{{item.email}}</td>
-                <td style="text-align: center;" *ngIf="item.trangThai==0"><i class="fa fa-lock" aria-hidden="true" (click)="change(item.maTk)"
-                        title="Khóa tài khoản"></i></td>
-                <td style="text-align: center;" *ngIf="item.trangThai==1"><i class="fa fa-unlock" aria-hidden="true" (click)="change(item.maTk)"
-                        title="Mở khóa tài khoản"></i></td>
-            </tr> -->
+            <tr *ngFor="let item of new, index as i">
+                <td style="text-align: left;">{{i+1}}</td>
+                <td style="text-align: left;">{{item.maTinTuc}}</td>
+                <td style="text-align: left;">{{item.tieuDe}}</td>
+                <td style="text-align: left;">{{item.noiDung}}</td>
+                <td style="text-align: center;">
+                    <i class="fa fa-eye"></i>
+                </td>
+            </tr>
         </tbody>
     </table>
-</div>
-<p-dialog [(visible)]="display" [style]="{width: '60vw'}" [dismissableMask]="true" [modal]="true">
-    <ng-template pTemplate="header">
-        <h3>Thêm tin tức mới</h3>
-    </ng-template>
-    <div style="width: 90%; margin-left: 5%;">
-        <label style="font-weight: bold;">Tiêu đề:</label>
-      <input type="text" class="form-control"  placeholder="Tiêu đề">
-      <label style="font-weight: bold;">Nội dung:</label>
-      <p-editor formControlName="description" [style]="{'height':'320px'}"></p-editor>
+    <div style="position: relative;margin-left: 40%;">
+        <ngb-pagination [collectionSize]="selectedTT" [pageSize]="10" [(page)]="page" [maxSize]="3" [rotate]="true"
+            (pageChange)="loadPage($event)">
+        </ngb-pagination>
     </div>
-        
-    <p-footer>
-        <button type="submit" class="btn btn-primary waves-effect waves-light mr-2">
-            <i class="mdi mdi-check"></i>
-            Thêm
-          </button>
-        <button type="button" (click)="display = false" class="btn btn-danger waves-effect waves-light"> <i
-            class="mdi mdi-window-close"></i>
-          Huỷ</button>
-    </p-footer>
-</p-dialog>
+</div>
